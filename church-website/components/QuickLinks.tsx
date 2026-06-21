@@ -2,10 +2,10 @@ import Link from 'next/link'
 import { Clock, FileText, Heart, CreditCard } from 'lucide-react'
 
 const links = [
-  { icon: Clock,      label: '예배 시간표', sub: '주일 오전 9 · 11시',        href: '/about#worship' },
-  { icon: FileText,   label: '이번 주 주보', sub: '2025년 6월 22일',           href: '/notices/bulletin' },
-  { icon: Heart,      label: '기도 요청',    sub: '함께 기도합니다',            href: '/pray' },
-  { icon: CreditCard, label: '온라인 헌금',  sub: '카카오페이 · 토스',          href: '/offering' },
+  { icon: Clock,      label: '예배 시간표', sub: '주일 오전 9 · 11시',   href: '/about' },
+  { icon: FileText,   label: '이번 주 주보', sub: '2025년 6월 22일',      href: '/notices' },
+  { icon: Heart,      label: '기도 요청',    sub: '함께 기도합니다',       href: '/notices' },
+  { icon: CreditCard, label: '온라인 헌금',  sub: '카카오페이 · 토스',     href: '/offering' },
 ]
 
 export default function QuickLinks() {

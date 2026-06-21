@@ -1,4 +1,4 @@
-import { Flame, MapPin, Phone, Clock } from 'lucide-react'
+import { Flame, MapPin, Clock } from 'lucide-react'
 
 export default function AboutPage() {
   return (
