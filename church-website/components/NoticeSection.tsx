@@ -1,13 +1,36 @@
+'use client'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
-const notices = [
-  { tag: '새소식', tagStyle: 'bg-brand-50 text-brand-600', text: '2025 여름 어린이 성경학교 신청 안내', date: '06.18', href: '/notices/1' },
-  { tag: '공지',   tagStyle: 'bg-teal-50 text-teal-600',   text: '6월 청년부 셀모임 일정 변경 안내', date: '06.15', href: '/notices/2' },
-  { tag: '새소식', tagStyle: 'bg-brand-50 text-brand-600', text: '온라인 헌금 시스템 오픈 안내',        date: '06.10', href: '/notices/3' },
-]
+type Notice = {
+  id: string
+  tag: string
+  text: string
+  created_at: string
+}
+
+const TAG_STYLE: Record<string, string> = {
+  '새소식': 'bg-brand-50 text-brand-600',
+  '공지':   'bg-teal-50 text-teal-600',
+  '긴급':   'bg-red-50 text-red-600',
+}
 
 export default function NoticeSection() {
+  const [notices, setNotices] = useState<Notice[]>([])
+
+  useEffect(() => {
+    supabase
+      .from('notices')
+      .select('id, tag, text, created_at')
+      .order('created_at', { ascending: false })
+      .limit(4)
+      .then(({ data }) => setNotices(data ?? []))
+  }, [])
+
+  if (notices.length === 0) return null
+
   return (
     <section>
       <div className="flex items-center justify-between mb-3">
@@ -17,16 +40,19 @@ export default function NoticeSection() {
         </Link>
       </div>
       <div className="border border-gray-100 rounded-xl overflow-hidden">
-        {notices.map((n, i) => (
-          <Link
-            key={i}
-            href={n.href}
-            className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors"
+        {notices.map(n => (
+          <div
+            key={n.id}
+            className="flex items-center gap-3 px-4 py-3 border-b border-gray-50 last:border-b-0"
           >
-            <span className={`text-[10px] rounded-full px-2 py-0.5 shrink-0 ${n.tagStyle}`}>{n.tag}</span>
+            <span className={`text-[10px] rounded-full px-2 py-0.5 shrink-0 ${TAG_STYLE[n.tag] ?? 'bg-gray-50 text-gray-500'}`}>
+              {n.tag}
+            </span>
             <span className="flex-1 text-sm text-gray-800 truncate">{n.text}</span>
-            <span className="text-xs text-gray-300 shrink-0">{n.date}</span>
-          </Link>
+            <span className="text-xs text-gray-300 shrink-0">
+              {n.created_at.slice(5, 10).replace('-', '.')}
+            </span>
+          </div>
         ))}
       </div>
     </section>

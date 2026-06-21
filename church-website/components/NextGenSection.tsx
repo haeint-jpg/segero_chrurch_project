@@ -1,50 +1,37 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Star, Zap, Flame, ChevronRight } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
 
-const tabs = [
-  {
-    key: 'children',
-    label: '어린이부',
-    icon: Star,
-    color: 'brand',
-    items: [
-      { title: '2025 여름 성경학교', sub: '7월 21–25일 · 신청 접수 중', badge: 'D-32', href: '/next-gen/children/camp' },
-      { title: '주일 어린이 예배', sub: '매주 일요일 오전 11시', badge: '예배 안내', href: '/next-gen/children' },
-      { title: '이번 주 어린이 설교', sub: '"다니엘처럼 용감하게!"', badge: '영상 보기', href: '/sermons?dept=children' },
-    ],
-    badgeStyle: 'bg-brand-50 text-brand-600',
-  },
-  {
-    key: 'youth',
-    label: '청소년부',
-    icon: Zap,
-    color: 'teal',
-    items: [
-      { title: '2025 청소년 수련회', sub: '8월 4–6일 · 신청 중', badge: 'D-46', href: '/next-gen/youth/camp' },
-      { title: '주일 청소년 예배', sub: '매주 일요일 오후 2시', badge: '예배 안내', href: '/next-gen/youth' },
-      { title: '이번 주 청소년 설교', sub: '"에스더처럼 이때를 위하여"', badge: '영상 보기', href: '/sermons?dept=youth' },
-    ],
-    badgeStyle: 'bg-teal-50 text-teal-600',
-  },
-  {
-    key: 'young',
-    label: '청년부',
-    icon: Flame,
-    color: 'amber',
-    items: [
-      { title: '6월 셀모임', sub: '매주 목요일 오후 7시 30분', badge: '신청하기', href: '/next-gen/young/cell' },
-      { title: '주일 청년 예배', sub: '매주 일요일 오후 4시', badge: '예배 안내', href: '/next-gen/young' },
-      { title: '이번 주 청년 설교', sub: '"요셉의 꿈, 나의 꿈"', badge: '영상 보기', href: '/sermons?dept=young' },
-    ],
-    badgeStyle: 'bg-amber-50 text-amber-600',
-  },
+type Item = { id: string; title: string; subtitle: string; badge: string; href: string }
+type Dept = 'children' | 'youth' | 'young'
+
+const TAB_META: { key: Dept; label: string; icon: React.ElementType; badgeStyle: string }[] = [
+  { key: 'children', label: '어린이부',  icon: Star,  badgeStyle: 'bg-brand-50 text-brand-600' },
+  { key: 'youth',    label: '청소년부',  icon: Zap,   badgeStyle: 'bg-teal-50 text-teal-600' },
+  { key: 'young',    label: '청년부',    icon: Flame, badgeStyle: 'bg-amber-50 text-amber-600' },
 ]
 
 export default function NextGenSection() {
-  const [active, setActive] = useState('children')
-  const tab = tabs.find(t => t.key === active)!
+  const [active, setActive] = useState<Dept>('children')
+  const [data, setData]     = useState<Record<Dept, Item[]>>({ children: [], youth: [], young: [] })
+
+  useEffect(() => {
+    supabase
+      .from('nextgen_items')
+      .select('id, dept, title, subtitle, badge, href')
+      .order('sort_order')
+      .then(({ data: rows }) => {
+        if (!rows) return
+        const grouped: Record<Dept, Item[]> = { children: [], youth: [], young: [] }
+        rows.forEach(r => { grouped[r.dept as Dept]?.push(r) })
+        setData(grouped)
+      })
+  }, [])
+
+  const tab = TAB_META.find(t => t.key === active)!
+  const items = data[active]
 
   return (
     <section>
@@ -57,7 +44,7 @@ export default function NextGenSection() {
 
       {/* 탭 */}
       <div className="flex border border-gray-100 rounded-lg overflow-hidden mb-3">
-        {tabs.map(t => {
+        {TAB_META.map(t => {
           const Icon = t.icon
           return (
             <button
@@ -77,23 +64,27 @@ export default function NextGenSection() {
       </div>
 
       {/* 항목 목록 */}
-      <div className="flex flex-col gap-2">
-        {tab.items.map((item, i) => (
-          <Link
-            key={i}
-            href={item.href}
-            className="flex items-center gap-3 p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
-          >
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-              <p className="text-xs text-gray-400">{item.sub}</p>
-            </div>
-            <span className={`text-[10px] rounded-full px-2 py-0.5 shrink-0 ${tab.badgeStyle}`}>
-              {item.badge}
-            </span>
-          </Link>
-        ))}
-      </div>
+      {items.length === 0 ? (
+        <p className="text-xs text-gray-400 text-center py-4">등록된 일정이 없습니다.</p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          {items.map(item => (
+            <Link
+              key={item.id}
+              href={item.href || '#'}
+              className="flex items-center gap-3 p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                <p className="text-xs text-gray-400">{item.subtitle}</p>
+              </div>
+              <span className={`text-[10px] rounded-full px-2 py-0.5 shrink-0 ${tab.badgeStyle}`}>
+                {item.badge}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
