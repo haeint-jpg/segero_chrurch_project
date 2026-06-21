@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ElementType } from 'react'
 import Link from 'next/link'
 import { Star, Zap, Flame, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 type Item = { id: string; title: string; subtitle: string; badge: string; href: string }
 type Dept = 'children' | 'youth' | 'young'
 
-const TAB_META: { key: Dept; label: string; icon: React.ElementType; badgeStyle: string }[] = [
+const TAB_META: { key: Dept; label: string; icon: ElementType; badgeStyle: string }[] = [
   { key: 'children', label: '어린이부',  icon: Star,  badgeStyle: 'bg-brand-50 text-brand-600' },
   { key: 'youth',    label: '청소년부',  icon: Zap,   badgeStyle: 'bg-teal-50 text-teal-600' },
   { key: 'young',    label: '청년부',    icon: Flame, badgeStyle: 'bg-amber-50 text-amber-600' },
